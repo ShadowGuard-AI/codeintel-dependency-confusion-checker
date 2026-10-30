@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # codeintel-Dependency-Confusion-Checker
 Identifies potential dependency confusion attacks by checking for inconsistencies between locally installed packages and those available in public repositories. - Focused on Tools for static code analysis, vulnerability scanning, and code quality assurance
 
