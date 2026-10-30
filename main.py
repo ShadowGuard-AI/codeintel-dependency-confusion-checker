@@ -1,10 +1,8 @@
 import argparse
 import logging
-import os
 import subprocess
 import sys
-import json
-import pkg_resources
+from importlib.metadata import distributions
 from packaging import version
 
 # Configure logging
@@ -67,26 +65,37 @@ def check_package_availability(package_name, pypi_url):
         ]
 
         result = subprocess.run(command, capture_output=True, text=True, check=True)
-
-        # Parse the output to extract versions. This approach is fragile
-        # and should be improved with a dedicated API call if PyPI allows it.
-
-        if result.stdout:
-            for line in result.stdout.splitlines():
-                if "Latest version" in line:
-                    parts = line.split(":")
-                    if len(parts) > 1:
-                        return parts[1].strip()
-            return None
-        else:
+        version_found = parse_latest_version(result.stdout)
+        if version_found is None:
             logging.warning(f"Package '{package_name}' not found on PyPI.")
-            return None
+        return version_found
     except subprocess.CalledProcessError as e:
         logging.error(f"Error checking package '{package_name}' on PyPI: {e}")
         raise
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
         raise
+
+
+def parse_latest_version(pip_output):
+    # pip index prints the newest release twice, as "name (X.Y)" on the
+    # first line and as the first entry of "Available versions:"; it
+    # never prints a "Latest version:" line, which is what an earlier
+    # version of this parser waited for, so every lookup came back None.
+    if not pip_output:
+        return None
+    lines = pip_output.splitlines()
+    if any("Available versions: none" in line for line in lines):
+        return None
+    first = lines[0].strip()
+    if first.endswith(")") and "(" in first:
+        return first[first.rindex("(") + 1:-1].strip()
+    for line in lines:
+        if "Available versions:" in line:
+            versions = line.split(":", 1)[1].strip()
+            if versions and versions.lower() != "none":
+                return versions.split(",")[0].strip()
+    return None
 
 
 def get_installed_packages():
@@ -98,8 +107,11 @@ def get_installed_packages():
     """
     installed_packages = {}
     try:
-        for package in pkg_resources.working_set:
-            installed_packages[package.key] = package.version
+        # importlib.metadata replaced pkg_resources here: pkg_resources is
+        # deprecated and slated for removal, and the setuptools pin in
+        # requirements.txt existed only to keep it importable.
+        for package in distributions():
+            installed_packages[package.metadata["Name"].lower()] = package.version
     except Exception as e:
         logging.error(f"Error getting installed packages: {e}")
         return {}  # Return empty dictionary in case of error
@@ -170,19 +182,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # Example Usage 1: Check all installed packages
-    # python main.py
-
-    # Example Usage 2: Check a specific package
-    # python main.py -p my_package
-
-    # Example Usage 3: Check a specific package with a custom PyPI URL
-    # python main.py -p my_package -r https://my-custom-pypi.example.com/simple
-
-    # Example Usage 4: Enable verbose logging
-    # python main.py -v
-
-    # Example Usage 5: Check a non-existent package on PyPI
-    # python main.py -p non_existent_package
-
     main()

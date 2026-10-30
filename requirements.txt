@@ -1,2 +1,2 @@
+# main.py also uses importlib.metadata from the standard library.
 packaging>=23.0
-setuptools>=68.0,<81
