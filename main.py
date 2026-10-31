@@ -129,22 +129,31 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     if args.package:
-        packages_to_check = {args.package: None}
+        installed_all = get_installed_packages()
+        packages_to_check = {args.package.lower(): installed_all.get(args.package.lower())}
     else:
         packages_to_check = get_installed_packages()
 
     if not packages_to_check:
         logging.warning("No packages found to check.")
-        sys.exit(0)
+        print("Summary: checked=0 failed=0 not_found=0")
+        sys.exit(1)
 
     vulnerable_packages = []
+    not_found_packages = []
+    checked_count = 0
+    failed_count = 0
+    not_found_count = 0
 
     for package_name, installed_version in packages_to_check.items():
         try:
             pypi_version = check_package_availability(package_name, args.pypi_url)
 
+            checked_count += 1
             if pypi_version is None:
                 # Package not found on PyPI - potential internal package
+                not_found_count += 1
+                not_found_packages.append(package_name)
                 logging.info(f"Package '{package_name}' not found on PyPI.")
             else:
                 installed_version_obj = version.parse(installed_version) if installed_version else None
@@ -164,9 +173,18 @@ def main():
                     logging.info(f"Package '{package_name}' is up-to-date or older than PyPI version.")
 
         except subprocess.CalledProcessError:
+            failed_count += 1
             logging.error(f"Failed to check package '{package_name}'. Skipping...")
         except Exception as e:
+            failed_count += 1
             logging.error(f"An error occurred while processing '{package_name}': {e}")
+
+    if not_found_packages:
+        print("\nPackages not found on the public index:")
+        for pkg_name in not_found_packages:
+            print(f"  - Package: {pkg_name} (not found on the public index)")
+
+    print(f"Summary: checked={checked_count} failed={failed_count} not_found={not_found_count}")
 
     if vulnerable_packages:
         print("\nPotential Dependency Confusion Vulnerabilities Found:")
@@ -176,9 +194,11 @@ def main():
                 f" PyPI Version: {vuln['pypi_version']}"
             )
         sys.exit(1)  # Exit with error code if vulnerabilities are found
-    else:
-        print("No potential dependency confusion vulnerabilities found.")
-        sys.exit(0)
+    if failed_count > 0 or checked_count == 0:
+        print("Check incomplete: some or all package checks failed.")
+        sys.exit(1)
+    print("No potential dependency confusion vulnerabilities found.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
