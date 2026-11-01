@@ -64,6 +64,10 @@ def check_package_availability(package_name, pypi_url):
             pypi_url
         ]
 
+        # I ask pip instead of calling the index API myself, so this
+        # inherits whatever pip does with proxies and index settings.
+        # It also means one subprocess per package, which is why a full
+        # installed list check takes as long as it does.
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         version_found = parse_latest_version(result.stdout)
         if version_found is None:
@@ -111,6 +115,9 @@ def get_installed_packages():
         # deprecated and slated for removal, and the setuptools pin in
         # requirements.txt existed only to keep it importable.
         for package in distributions():
+            # I lower case the name as the key. Two distributions whose
+            # names differ only in case would overwrite each other here,
+            # and only the last version read would survive.
             installed_packages[package.metadata["Name"].lower()] = package.version
     except Exception as e:
         logging.error(f"Error getting installed packages: {e}")
@@ -130,6 +137,9 @@ def main():
 
     if args.package:
         installed_all = get_installed_packages()
+        # I keep a named package even when it is not installed, with a
+        # None version. The check below then compares only the index
+        # side, and a package I never installed can still be reported.
         packages_to_check = {args.package.lower(): installed_all.get(args.package.lower())}
     else:
         packages_to_check = get_installed_packages()
