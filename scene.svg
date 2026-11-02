@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="The beach in three depths: breaker lines arriving and spending themselves while the lane between them stays flat, two flags lifting and slackening in gusts, and the wash withdrawing at the lower edge carrying foam flecks a short way seaward down the lane">
+<rect x="0" y="0" width="1200" height="300" fill="#2a4a6e"/>
+<rect x="470" y="0" width="260" height="210" fill="#48788c"/>
+<g stroke="#f4f8f8" stroke-width="7" fill="none"><path d="M20 70 H440 M760 70 H1180"><animate attributeName="opacity" values="0.25;1;0.25" dur="17s" repeatCount="indefinite"/></path><path d="M20 130 H440 M760 130 H1180"><animate attributeName="opacity" values="1;0.25;1" dur="19s" begin="3s" repeatCount="indefinite"/></path></g>
+<g><line x1="430" y1="120" x2="430" y2="238" stroke="#6e5436" stroke-width="7"/><path fill="#b08a2c"><animate attributeName="d" values="M437 124 L545 130 L545 178 L437 172 Z;M437 124 L552 126 L548 168 L437 172 Z;M437 124 L545 130 L545 178 L437 172 Z" dur="9s" repeatCount="indefinite"/></path></g>
+<g><line x1="770" y1="120" x2="770" y2="238" stroke="#6e5436" stroke-width="7"/><path fill="#17503c"><animate attributeName="d" values="M777 124 L885 130 L885 178 L777 172 Z;M777 124 L878 134 L880 182 L777 172 Z;M777 124 L885 130 L885 178 L777 172 Z" dur="11s" begin="2s" repeatCount="indefinite"/></path></g>
+<rect x="590" y="150" width="26" height="20" fill="#c8a878"/><circle cx="603" cy="140" r="9" fill="#c49468"><animateTransform attributeName="transform" type="rotate" values="0 603 140;-18 603 140;14 603 140;0 603 140" dur="23s" repeatCount="indefinite"/></circle>
+<rect x="0" y="238" width="1200" height="62" fill="#c6ba98"><animate attributeName="y" values="238;230;238" dur="13s" repeatCount="indefinite"/></rect>
+<g fill="#eef3f1"><ellipse cx="580" cy="262" rx="10" ry="3"><animate attributeName="cx" values="580;566;580" dur="13s" repeatCount="indefinite"/></ellipse><ellipse cx="628" cy="276" rx="8" ry="3"><animate attributeName="cx" values="628;616;628" dur="13s" repeatCount="indefinite"/></ellipse></g>
+</svg>
